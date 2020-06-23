@@ -1,4 +1,5 @@
 from django.db import models
+import math
 
 class CharacterType(models.Model):
     text = models.CharField(max_length=10)
@@ -26,6 +27,16 @@ class House(models.Model):
     def __str__(self):
         return self.text
 
+def XPCost(value):
+    return int(math.copysign(sum(i for i in range(1, abs(value)+1)), value))
+
+class Characteristic(models.Model):
+    text = models.CharField(max_length=20)
+    abbrev = models.CharField(max_length=3)
+
+    def __str__(self):
+        return self.abbrev
+
 class Character(models.Model):
     name = models.CharField(max_length=32)
     fullname = models.CharField(max_length=200)
@@ -38,8 +49,14 @@ class Character(models.Model):
     def virtues(self):
         return CharacterVirtue.objects.filter(character__pk=self.id)
 
+    def characteristics(self):
+        return CharacterCharacteristic.objects.filter(character__pk=self.id)
+
     def virtue_total(self):
         return sum(v.virtue.cost for v in self.virtues().all())
+
+    def characteristic_cost(self):
+        return sum(c.cost() for c in self.characteristics().all())
 
 class CharacterVirtue(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE)
@@ -51,3 +68,17 @@ class CharacterVirtue(models.Model):
             return str(self.virtue) + ": " + self.notes
         else:
             return str(self.virtue)
+
+class CharacterCharacteristic(models.Model):
+    character = models.ForeignKey(Character, on_delete=models.CASCADE)
+    characteristic = models.ForeignKey(Characteristic, on_delete=models.PROTECT)
+    score = models.IntegerField()
+
+    class Meta:
+        unique_together = (("character", "characteristic"), )
+
+    def __str__(self):
+        return str(self.character) + ":" + str(self.characteristic) + ":" + str(self.score)
+
+    def cost(self):
+        return XPCost(self.score)

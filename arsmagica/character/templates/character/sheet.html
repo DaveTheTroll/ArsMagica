@@ -7,6 +7,12 @@
         {% if character.house %}
             House : {{character.house}}
         {% endif %}
+        <h2>Characteristics<sub>[{{character.characteristic_cost}}]</sub></h2>
+        <table>
+            {% for c in character.characteristics.all %}
+            <tr><th>{{c.characteristic}}</th><td>{{c.score}}</td></tr>
+            {% endfor %}
+        </table>
         <h2>Virtues/Flaws<sub>[{{character.virtue_total}}]</sub></h2>
         <ul>
             {% for v in character.virtues.all %}
