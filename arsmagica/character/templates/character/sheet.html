@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <title>Character: {{character.name}}</title>
+    </head>
+    <body>
+        <h1>{{character.fullname}}</h1>
+        {% if character.house %}
+            House : {{character.house}}
+        {% endif %}
+        <h2>Virtues/Flaws<sub>[{{character.virtue_total}}]</sub></h2>
+        <ul>
+            {% for v in character.virtues.all %}
+            <li>{{v}}</li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>

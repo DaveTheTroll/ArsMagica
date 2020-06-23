@@ -1,0 +1,5 @@
+/arsmagica/arsmagica/__pycache__
+/arsmagica/character/__pycache__
+/arsmagica/db.sqlite3
+/.vscode
+/arsmagica/character/migrations
