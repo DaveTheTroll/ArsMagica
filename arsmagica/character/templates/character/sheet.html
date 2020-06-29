@@ -3,21 +3,46 @@
         <title>Character: {{character.name}}</title>
     </head>
     <body>
+        <hr/>
         <h1>{{character.fullname}}</h1>
         {% if character.house %}
             House : {{character.house}}
         {% endif %}
         <h2>Characteristics<sub>[{{character.characteristic_cost}}]</sub></h2>
         <table>
-            {% for c in character.characteristics.all %}
-            <tr><th>{{c.characteristic}}</th><td>{{c.score}}</td></tr>
+            {% for c in character.characteristics %}
+            <tr><th>{{c.characteristic}}</th><td>{{c.score}}</td><td>(<i>{{c.description}}</i>)</td></tr>
             {% endfor %}
         </table>
-        <h2>Virtues/Flaws<sub>[{{character.virtue_total}}]</sub></h2>
+        <h2>Virtues/Flaws<sub>[{{character.virtue_total}} / {{character.flaw_total}}]</sub></h2>
         <ul>
-            {% for v in character.virtues.all %}
+            {% for v in character.virtues %}
             <li>{{v}}</li>
             {% endfor %}
         </ul>
+        <table><tr valign="top"><td>
+            <h2>Abilities</h2>
+            <table>
+                {% for a in character.abilities %}
+                <tr><th>{{a.ability.text}}</th><td>{{a.score}}</td><td>(<i>{{a.speciality}}</i>)</td></tr>
+                {% endfor %}
+                <tr><th></th></tr>
+            </table>
+        </td><td>
+            <h2>Arts</h2>
+            <table>
+                {% for a in character.arts %}
+                <tr><th>{{a.art.text}}</th><td>{{a.score}}</td></tr>
+                {% endfor %}
+                <tr><th></th></tr>
+            </table>
+        </td></tr></table>
+        <h2>Spent XP</h2>
+        <table>
+            {% for source, xp in character.spent_xp.items %}
+            <tr><th>{{source}}</th><td>{{xp}}</td></tr>
+            {% endfor %}
+            <tr><th></th></tr>
+        </table>
     </body>
 </html>

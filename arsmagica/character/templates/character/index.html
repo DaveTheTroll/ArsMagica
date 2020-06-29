@@ -1,0 +1,9 @@
+{% extends "character/base.html" %}
+{% block title %}List{% endblock %}
+{% block content %}
+    <ul>
+    {% for character in characters.all %}
+        <li><a href="{{character.id}}">{{character.name}}</a></li>
+    {% endfor %}
+    </ul>
+{% endblock %}
