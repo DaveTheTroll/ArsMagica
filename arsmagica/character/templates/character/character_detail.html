@@ -2,9 +2,11 @@
 {% block title %}{{character.name}}{% endblock %}
 {% block content %}
         <h1>{{character.fullname}}</h1>
+        Type : {{character.char_type}}<br/>
         {% if character.house %}
-            House : {{character.house}}
+            House : {{character.house}}<br/>
         {% endif %}
+        <a href="edit/{{character.pk}}">Edit</a>
         <h2>Characteristics<sub>[{{character.characteristic_cost}}]</sub></h2>
         <table>
             {% for c in character.characteristics %}

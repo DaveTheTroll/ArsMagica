@@ -1,4 +1,6 @@
 from django.db import models
+from django.urls import reverse
+from django.core.exceptions import ValidationError
 import math
 
 class CharacterType(models.Model):
@@ -40,8 +42,14 @@ class Characteristic(models.Model):
 class Character(models.Model):
     name = models.CharField(max_length=32)
     fullname = models.CharField(max_length=200)
-    char_type = models.ForeignKey(CharacterType, null=True, on_delete=models.PROTECT)
-    house = models.ForeignKey(House, null=True, on_delete=models.PROTECT)
+    char_type = models.ForeignKey(CharacterType, on_delete=models.PROTECT)
+    house = models.ForeignKey(House, null=True, blank=True, on_delete=models.PROTECT)
+
+    def clean(self):
+        if self.char_type.text == "Magus" and self.house == None:
+            raise ValidationError("Magus character must have a House")
+        if self.char_type.text != "Magus" and self.house != None:
+            raise ValidationError("Non-magus character must not have a House")
 
     def __str__(self):
         return self.name
@@ -88,6 +96,9 @@ class Character(models.Model):
                 all_xp[xp['source__text']] = xp['xp']
 
         return all_xp
+
+    def get_absolute_url(self):
+        return reverse('sheet', kwargs={'pk': self.pk})   
 
 class CharacterVirtue(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE)

@@ -1,22 +1,30 @@
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.template import loader
-
 from django.views import generic
 
 from .models import Character, CharacterType, House
 
-class IndexView(generic.ListView):
+class CharacterIndexView(generic.ListView):
     model = Character
 
-class SheetView(generic.DetailView):
+class CharacterSheetView(generic.DetailView):
     model = Character
 
-def new(request):
-    print (request.POST)
-    if "create" in request.POST:
-        return HttpResponse("HELLO")
-    else:
-        template = loader.get_template('character/new.html')
-        context = {'character_types': CharacterType.objects, 'houses': House.objects}
-        return HttpResponse(template.render(context, request))
+class CharacterCreateView(generic.edit.CreateView):
+    model = Character
+    fields = ['name', 'fullname', 'char_type', 'house']
+
+    def get_form(self, form_class=None):
+        form = super(CharacterCreateView, self).get_form(form_class)
+        form.fields['house'].required = False
+        return form
+
+class CharacterUpdateView(generic.edit.UpdateView):
+    model = Character
+    fields = ['name', 'fullname', 'char_type', 'house']
+
+    def get_form(self, form_class=None):
+        form = super(CharacterUpdateView, self).get_form(form_class)
+        form.fields['house'].required = False
+        return form
+
+class CharacterVirtuesView(generic.edit.FormView):
+    pass
