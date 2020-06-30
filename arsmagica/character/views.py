@@ -7,17 +7,10 @@ from django.views import generic
 from .models import Character, CharacterType, House
 
 class IndexView(generic.ListView):
-    template_name = "character/index.html"
-    context_object_name = "characters"
+    model = Character
 
-    def get_queryset(self):
-        return Character.objects
-
-def sheet(request, character_id):
-    id = int(character_id)
-    template = loader.get_template('character/sheet.html')
-    context = {'character': Character.objects.get(id=id)}
-    return HttpResponse(template.render(context, request))
+class SheetView(generic.DetailView):
+    model = Character
 
 def new(request):
     print (request.POST)

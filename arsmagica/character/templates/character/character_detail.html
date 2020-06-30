@@ -1,9 +1,6 @@
-<html>
-    <head>
-        <title>Character: {{character.name}}</title>
-    </head>
-    <body>
-        <hr/>
+{% extends "character/base.html" %}
+{% block title %}{{character.name}}{% endblock %}
+{% block content %}
         <h1>{{character.fullname}}</h1>
         {% if character.house %}
             House : {{character.house}}
@@ -44,5 +41,4 @@
             {% endfor %}
             <tr><th></th></tr>
         </table>
-    </body>
-</html>
+{% endblock %}

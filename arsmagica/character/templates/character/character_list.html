@@ -2,7 +2,7 @@
 {% block title %}List{% endblock %}
 {% block content %}
     <ul>
-    {% for character in characters.all %}
+    {% for character in character_list %}
         <li><a href="{{character.id}}">{{character.name}}</a></li>
     {% endfor %}
     </ul>
