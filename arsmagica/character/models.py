@@ -4,27 +4,39 @@ from django.core.exceptions import ValidationError
 import math
 
 class CharacterType(models.Model):
-    text = models.CharField(max_length=10)
+    text = models.CharField(max_length=10, unique=True)
     
     def __str__(self):
         return self.text
 
 class VirtueType(models.Model):
-    text = models.CharField(max_length=20)
+    text = models.CharField(max_length=20, unique=True)
     
     def __str__(self):
         return self.text
 
 class Virtue(models.Model):
-    text = models.CharField(max_length=64)
+    text = models.CharField(max_length=64, unique=True)
     cost = models.IntegerField()
     virtue_type = models.ForeignKey(VirtueType, on_delete=models.PROTECT)
+
+    def MajorMinor(self):
+        if abs(self.cost) == 3: return "Major"
+        if abs(self.cost) == 1: return "Minor"
+        if abs(self.cost) == 0: return "Free"
+        return "[%d]"%self.cost
+
+    def VirtueFlaw(self):
+        return "Virtue" if self.cost >= 0 else "Flaw"
+
+    def type(self):
+        return self.MajorMinor() + " " + str(self.virtue_type) + " " + self.VirtueFlaw()
 
     def __str__(self):
         return self.text
 
 class House(models.Model):
-    text = models.CharField(max_length=20)
+    text = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
         return self.text
@@ -33,15 +45,15 @@ def XPCost(value):
     return int(math.copysign(sum(i for i in range(1, abs(value)+1)), value))
 
 class Characteristic(models.Model):
-    text = models.CharField(max_length=20)
-    abbrev = models.CharField(max_length=3)
+    text = models.CharField(max_length=20, unique=True)
+    abbrev = models.CharField(max_length=3, unique=True)
 
     def __str__(self):
         return self.abbrev
 
 class Character(models.Model):
-    name = models.CharField(max_length=32)
-    fullname = models.CharField(max_length=200)
+    name = models.CharField(max_length=32, unique=True)
+    fullname = models.CharField(max_length=200, unique=True)
     char_type = models.ForeignKey(CharacterType, on_delete=models.PROTECT)
     house = models.ForeignKey(House, null=True, blank=True, on_delete=models.PROTECT)
 
@@ -127,13 +139,13 @@ class CharacterCharacteristic(models.Model):
         return XPCost(self.score)
 
 class AbilityType(models.Model):
-    text = models.CharField(max_length=20)
+    text = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
         return self.text
 
 class Ability(models.Model):
-    text = models.CharField(max_length=32)
+    text = models.CharField(max_length=32, unique=True)
     abilityType = models.ForeignKey(AbilityType, on_delete=models.PROTECT)
 
     def __str__(self):
@@ -168,7 +180,7 @@ class CharacterAbility(models.Model):
         return str(self.character) + ":" + str(self.ability)
 
 class XPSource(models.Model):
-    text = models.CharField(max_length=20)
+    text = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
         return self.text
@@ -185,8 +197,8 @@ class CharacterAbilityXP(models.Model):
         return str(self.ability) + ":" + str(self.source)
 
 class Art(models.Model):
-    text = models.CharField(max_length=20)
-    abbrev = models.CharField(max_length=3)
+    text = models.CharField(max_length=20, unique=True)
+    abbrev = models.CharField(max_length=3, unique=True)
     form = models.BooleanField()
 
     def __str__(self):
@@ -211,12 +223,14 @@ class CharacterArtXP(models.Model):
     art = models.ForeignKey(CharacterArt, on_delete=models.CASCADE)
     source = models.ForeignKey(XPSource, on_delete=models.PROTECT)
     xp = models.IntegerField()
+    class Meta:
+        unique_together = (("source", "art"), )
 
     def __str__(self):
         return str(self.art) + ":" + str(self.source)
 
 class Spell(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
     technique = models.ForeignKey(Art, on_delete=models.PROTECT, related_name='spell_technique')
     form = models.ForeignKey(Art, on_delete=models.PROTECT, related_name='spell_form')
     requisites = models.ManyToManyField(Art, related_name='spell_requisites', blank=True, null=True)

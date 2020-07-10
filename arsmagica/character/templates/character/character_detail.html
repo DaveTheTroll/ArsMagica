@@ -14,6 +14,7 @@
             {% endfor %}
         </table>
         <h2>Virtues/Flaws<sub>[{{character.virtue_total}} / {{character.flaw_total}}]</sub></h2>
+        <a href="virtues/{{character.pk}}">Edit</a>
         <ul>
             {% for v in character.virtues %}
             <li>{{v}}</li>

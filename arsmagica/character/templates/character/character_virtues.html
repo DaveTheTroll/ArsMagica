@@ -1,0 +1,24 @@
+{% extends "character/base.html" %}
+{% block title %}{{character.name}}{% endblock %}
+{% block content %}
+    <h1>{{character.fullname}}</h1>
+    <h2>Virtues/Flaws<sub>[{{character.virtue_total}} / {{character.flaw_total}}]</sub></h2>
+    <table><tr valign="top"><td>
+        <table>
+            {% for v in character.virtues %}
+            <tr><td>{{v}}</td><td><form action="" method="post">{% csrf_token %}<input type="submit" name="Submit" value="Remove" /><input type="hidden" name="pk" value="{{v.pk}}" /></form></td></tr>
+            {% endfor %}
+        </table>
+    </td>
+    <td>
+    <h3>Add</h3>
+    <form action="" method="post">{% csrf_token %}
+        <select name="virtue">
+        {% for v in virtues %}
+            <option value="{{v.pk}}">{{v.text}} [{{v.type}}]</option>
+        {% endfor %}
+        </select>
+        <input type="text" maxlength="512" name="notes" /><input type="submit" name="Submit" value="Add" />
+    </form>
+    </td></tr></table>
+{% endblock %}
