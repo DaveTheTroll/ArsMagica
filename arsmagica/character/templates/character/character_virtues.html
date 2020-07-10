@@ -3,7 +3,7 @@
 {% block content %}
     <h1>{{character.fullname}}</h1>
     <h2>Virtues/Flaws<sub>[{{character.virtue_total}} / {{character.flaw_total}}]</sub></h2>
-    <table><tr valign="top"><td>
+    <table border="1"><tr valign="top"><td>
         <table>
             {% for v in character.virtues %}
             <tr><td>{{v}}</td><td><form action="" method="post">{% csrf_token %}<input type="submit" name="Submit" value="Remove" /><input type="hidden" name="pk" value="{{v.pk}}" /></form></td></tr>
@@ -19,6 +19,27 @@
         {% endfor %}
         </select>
         <input type="text" maxlength="512" name="notes" /><input type="submit" name="Submit" value="Add" />
+    </form>
+    <h3>Add New</h3>
+    <form action="" method="post">{% csrf_token %}
+        <input type="text" name="text" maxlength="64" />
+        <select name="type">
+        {% for v in virtuetypes %}
+            <option value="{{v.pk}}">{{v.text}}</option>
+        {% endfor %}
+        </select>
+        <select name="mm">
+            <option value="1">Minor</option>
+            <option value="3">Major</option>
+            <option value="0">Free</option>
+        </select>
+        <select name="vf">
+            <option value="-1">Flaw</option>
+            <option value="+1">Virtues</option>
+        </select>
+        <br/>
+        <input type="text" maxlength="512" name="notes" />
+        <input type="submit" name="Submit" value="Add New" />
     </form>
     </td></tr></table>
 {% endblock %}

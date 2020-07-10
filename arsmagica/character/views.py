@@ -1,5 +1,5 @@
 from django.views import generic, View
-
+from django.db import transaction
 from .models import Character, CharacterType, House, CharacterVirtue, Virtue, VirtueType
 
 class CharacterIndexView(generic.ListView):
@@ -35,6 +35,17 @@ class CharacterVirtuesView(generic.TemplateView):
             CharacterVirtue.objects.get(pk=request.POST['pk']).delete()
         elif request.POST['Submit'] == "Add":
             new_cv = CharacterVirtue(character=Character.objects.get(pk=kwargs['pk']), virtue=Virtue.objects.get(pk=int(request.POST['virtue'])), notes=request.POST['notes'])
+            new_cv.save()
+        elif request.POST['Submit'] == "Add New":
+            new_v = Virtue(text=request.POST['text'],
+                virtue_type = VirtueType.objects.get(pk=int(request.POST['type'])),
+                cost = int(request.POST['mm']) * int(request.POST['vf'])
+            )
+            new_v.save()
+            print("===========")
+            print(new_v.pk)
+            print("===========")
+            new_cv = CharacterVirtue(character=Character.objects.get(pk=kwargs['pk']), virtue=new_v, notes=request.POST['notes'])
             new_cv.save()
         return super(CharacterVirtuesView, self).get(request, **kwargs)
 
