@@ -1,0 +1,23 @@
+{% extends "character/base.html" %}
+{% block title %}{{character.name}} Abilities{% endblock %}
+{% block content %}
+<h1>{{character.fullname}}</h1>
+<h2>Abilities</h2>
+<table>
+    <tr><td colspan="3"></td><td colspan="{{xpsource|length}}">XP</td></th></tr>
+    <tr><th>Ability</th><th>Speciality</th><th>Score</th>
+    {% for x in xpsource %}
+    <th>{{x.text}}</th>
+    {% endfor %}
+    </tr>
+    {% for a in character.abilities %}
+    <tr><td>{{a.ability}}</td><td>(<i>{{a.speciality}}</i>)</td><td>{{a.score}}</td>
+        {% for x in a.xp_by_source_all %}
+        <td>
+            <input type="number" value="{{x.1}}" min="0" step="1" width="3" />
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

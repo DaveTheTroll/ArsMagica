@@ -7,4 +7,5 @@ urlpatterns = [
     path('new', views.CharacterCreateView.as_view(), name='new'),
     path('edit/<int:pk>', views.CharacterUpdateView.as_view(), name='edit'),
     path('virtues/<int:pk>', views.CharacterVirtuesView.as_view(), name='virtues'),
+    path('abilities/<int:pk>', views.CharacterAbilitiesView.as_view(), name='abilities'),
 ]

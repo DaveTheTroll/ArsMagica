@@ -167,11 +167,27 @@ class CharacterAbility(models.Model):
     speciality = models.CharField(max_length=32)
 
     def xp(self):
-        return sum(xp.xp for xp in CharacterAbilityXP.objects.filter(ability=self.pk))
+        return sum(xp.xp for xp in self.xp_by_source())
 
     def score(self):
         return ScoreFromXP(self.xp()/5)
 
+    def xp_by_source(self):
+        return CharacterAbilityXP.objects.filter(ability=self.pk)
+
+    def xp_by_source_all(self):
+        try:
+            all_xp = []
+            for x in XPSource.objects.all():
+                try:
+                    this_xp = CharacterAbilityXP.objects.get(ability=self.pk, source=x.pk)
+                    all_xp.append([x.pk, this_xp.xp])
+                except CharacterAbilityXP.DoesNotExist:
+                    all_xp.append([x.pk, 0])
+            return all_xp
+        except Exception as ee:
+            print(ee)
+        
     class Meta:
         unique_together = (("character", "ability"), )
         verbose_name_plural = "Character abilities"
@@ -233,7 +249,7 @@ class Spell(models.Model):
     name = models.CharField(max_length=64, unique=True)
     technique = models.ForeignKey(Art, on_delete=models.PROTECT, related_name='spell_technique')
     form = models.ForeignKey(Art, on_delete=models.PROTECT, related_name='spell_form')
-    requisites = models.ManyToManyField(Art, related_name='spell_requisites', blank=True, null=True)
+    requisites = models.ManyToManyField(Art, related_name='spell_requisites')
     level = models.IntegerField()
     notes = models.TextField(max_length=128, blank=True, null=True)
 

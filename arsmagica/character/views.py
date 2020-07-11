@@ -1,6 +1,6 @@
 from django.views import generic, View
 from django.db import transaction
-from .models import Character, CharacterType, House, CharacterVirtue, Virtue, VirtueType
+from .models import Character, CharacterType, House, CharacterVirtue, Virtue, VirtueType, Ability, AbilityType, XPSource
 
 class CharacterIndexView(generic.ListView):
     model = Character
@@ -30,7 +30,6 @@ class CharacterVirtuesView(generic.TemplateView):
     template_name = "character\character_virtues.html"
 
     def post(self, request, **kwargs):
-        print(request.POST)
         if request.POST['Submit'] == "Remove":
             CharacterVirtue.objects.get(pk=request.POST['pk']).delete()
         elif request.POST['Submit'] == "Add":
@@ -42,9 +41,6 @@ class CharacterVirtuesView(generic.TemplateView):
                 cost = int(request.POST['mm']) * int(request.POST['vf'])
             )
             new_v.save()
-            print("===========")
-            print(new_v.pk)
-            print("===========")
             new_cv = CharacterVirtue(character=Character.objects.get(pk=kwargs['pk']), virtue=new_v, notes=request.POST['notes'])
             new_cv.save()
         return super(CharacterVirtuesView, self).get(request, **kwargs)
@@ -56,6 +52,18 @@ class CharacterVirtuesView(generic.TemplateView):
         pk = kwargs['pk']
         return {
                 'character': Character.objects.get(pk=pk),
-                'virtues': Virtue.objects.all().order_by('cost','virtue_type','text'),
+                'virtues': Virtue.objects.all().order_by('text'),
                 'virtuetypes': VirtueType.objects.all()
+                }
+
+class CharacterAbilitiesView(generic.TemplateView):
+    template_name = "character\character_abilities.html"
+
+    def get_context_data(self, *args, **kwargs):
+        pk = kwargs['pk']
+        return {
+                'character': Character.objects.get(pk=pk),
+                'abilities': Ability.objects.all().order_by('text'),
+                'abilitytypes': AbilityType.objects.all(),
+                'xpsource': XPSource.objects.all()
                 }

@@ -22,6 +22,7 @@
         </ul>
         <table><tr valign="top"><td>
             <h2>Abilities</h2>
+            <a href="abilities/{{character.pk}}">Edit</a>
             <table>
                 {% for a in character.abilities %}
                 <tr><th>{{a.ability.text}}</th><td>{{a.score}}</td><td>(<i>{{a.speciality}}</i>)</td></tr>
