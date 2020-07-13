@@ -3,21 +3,28 @@
 {% block content %}
 <h1>{{character.fullname}}</h1>
 <h2>Abilities</h2>
+<form method="post">{% csrf_token %}
 <table>
-    <tr><td colspan="3"></td><td colspan="{{xpsource|length}}">XP</td></th></tr>
+    <tr><td colspan="3"></td><td colspan="{{character.xp_source_available|length}}">XP</td></th></tr>
     <tr><th>Ability</th><th>Speciality</th><th>Score</th>
-    {% for x in xpsource %}
-    <th>{{x.text}}</th>
+    {% for x in character.xp_source_available %}
+    <th>{{x.1}}<br/>[{{x.3}} of {{x.2}}]</th>
     {% endfor %}
     </tr>
     {% for a in character.abilities %}
     <tr><td>{{a.ability}}</td><td>(<i>{{a.speciality}}</i>)</td><td>{{a.score}}</td>
         {% for x in a.xp_by_source_all %}
         <td>
-            <input type="number" value="{{x.1}}" min="0" step="1" width="3" />
+            {% if x.0 != -1 %}
+            <input type="number" name="xp_{{x.0}}" value="{{x.2}}" min="0" step="1" width="3" />
+            {% else %}
+            <input type="number" name="xp_new_{{a.pk}}_{{x.1}}" value="{{x.2}}" min="0" step="1" width="3" />
+            {% endif %}
         </td>
         {% endfor %}
     </tr>
     {% endfor %}
+    <tr><td colspan="{{character.xp_source_available|length}}"></td><td colspan="3" align="right"><input type="submit" name="Submit" value="Update" /></td></tr>
 </table>
+</form>
 {% endblock %}

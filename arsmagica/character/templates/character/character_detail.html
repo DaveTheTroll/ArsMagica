@@ -2,11 +2,18 @@
 {% block title %}{{character.name}}{% endblock %}
 {% block content %}
         <h1>{{character.fullname}}</h1>
-        Type : {{character.char_type}}<br/>
+        <a href="edit/{{character.pk}}">Edit</a><br/>
+        <table>
+            <tr><th>Type</th><td>{{character.char_type}}</td></tr>
         {% if character.house %}
-            House : {{character.house}}<br/>
+            <tr><th>House</th><td>{{character.house}}</td></tr>
         {% endif %}
-        <a href="edit/{{character.pk}}">Edit</a>
+            <tr><th>Age</th><td>{{character.age}}</td><th>Birth Season</th><td>{{character.birth_season}}</td><th>Current Season</th><td>{{character.current_season}}</td></tr>
+            {% if character.gauntlet_season_val %}
+                <tr><th>Age at Gauntlet</th><td>{{character.age_at_gauntlet}}</td></tr>
+            {% endif %}
+            <tr><th>Age at Creation</th><td>{{character.age_at_start}}</td><th>Start Season</th><td>{{character.start_season}}</td></tr>
+        </table>
         <h2>Characteristics<sub>[{{character.characteristic_cost}}]</sub></h2>
         <table>
             {% for c in character.characteristics %}

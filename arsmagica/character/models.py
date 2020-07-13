@@ -51,17 +51,73 @@ class Characteristic(models.Model):
     def __str__(self):
         return self.abbrev
 
+class Season:
+    def __init__(self, value):
+        self.value = value
+
+    seasons = ("Spring", "Summer", "Autumn", "Winter")
+
+    @property
+    def year(self):
+        return 1200 + int(self.value/4)
+
+    @property
+    def season(self):
+        return Season.seasons[self.value % 4]
+
+    def __str__(self):
+        return "%s %d"%(self.season, self.year)
+    
+    def __sub__(self, other):
+        return (self.value - other.value)/4
+
 class Character(models.Model):
     name = models.CharField(max_length=32, unique=True)
     fullname = models.CharField(max_length=200, unique=True)
     char_type = models.ForeignKey(CharacterType, on_delete=models.PROTECT)
     house = models.ForeignKey(House, null=True, blank=True, on_delete=models.PROTECT)
+    birth_season_val = models.IntegerField()
+    gauntlet_season_val = models.IntegerField(null=True, blank=True)
+    start_season_val = models.IntegerField()
+    current_season_val = models.IntegerField()
+
+    @property
+    def birth_season(self):
+        return Season(self.birth_season_val)
+
+    @property
+    def gauntlet_season(self):
+        return Season(self.gauntlet_season_val)
+
+    @property
+    def start_season(self):
+        return Season(self.start_season_val)
+
+    @property
+    def current_season(self):
+        return Season(self.current_season_val)
+
+    @property
+    def age_at_gauntlet(self):
+        return int(self.gauntlet_season - self.birth_season)
+
+    @property
+    def age_at_start(self):
+        return int(self.start_season - self.birth_season)
+
+    @property
+    def age(self):
+        return int(self.current_season - self.birth_season)
 
     def clean(self):
-        if self.char_type.text == "Magus" and self.house == None:
+        if self.is_magus and self.house == None:
             raise ValidationError("Magus character must have a House")
-        if self.char_type.text != "Magus" and self.house != None:
+        if not self.is_magus and self.house != None:
             raise ValidationError("Non-magus character must not have a House")
+        if self.is_magus and self.gauntlet_season_val == None:
+            raise ValidationError("Magus character must have Gauntlet season")
+        if not self.is_magus and self.gauntlet_season_val != None:
+            raise ValidationError("Non-magus character must not have Gauntlet season")
 
     def __str__(self):
         return self.name
@@ -108,6 +164,32 @@ class Character(models.Model):
                 all_xp[xp['source__text']] = xp['xp']
 
         return all_xp
+
+    @property
+    def is_magus(self):
+        return self.char_type.text == "Magus"
+
+    @property
+    def xp_source_available(self):
+        xp_source_list = []
+        print("====================")
+        for x in XPSource.objects.all():
+            spent = sum(xp.xp for xp in CharacterAbilityXP.objects.filter(ability__character=self.pk, source=x))
+            if x.code == XPSource.EARLY:
+                xp_available = 45
+            elif x.code == XPSource.NATIVE:
+                xp_available = 75
+            elif x.code == XPSource.LATER:
+                xp_available = (self.age_at_gauntlet-20 if self.is_magus else self.age_at_start-5) * 15
+            elif x.code == XPSource.APPRENTICE:
+                xp_available = 240 if self.is_magus else 0
+            elif x.code == XPSource.AFTER_APPRENTICE:
+                xp_available = (self.age_at_start - self.age_at_gauntlet if self.is_magus else 0) * 30
+            else:
+                xp_available = 0
+            
+            xp_source_list.append((x.pk, x.text, xp_available, spent))
+        return xp_source_list
 
     def get_absolute_url(self):
         return reverse('sheet', kwargs={'pk': self.pk})   
@@ -181,9 +263,9 @@ class CharacterAbility(models.Model):
             for x in XPSource.objects.all():
                 try:
                     this_xp = CharacterAbilityXP.objects.get(ability=self.pk, source=x.pk)
-                    all_xp.append([x.pk, this_xp.xp])
+                    all_xp.append([this_xp.pk, x.pk, this_xp.xp])
                 except CharacterAbilityXP.DoesNotExist:
-                    all_xp.append([x.pk, 0])
+                    all_xp.append([-1, x.pk, 0])
             return all_xp
         except Exception as ee:
             print(ee)
@@ -197,6 +279,24 @@ class CharacterAbility(models.Model):
 
 class XPSource(models.Model):
     text = models.CharField(max_length=20, unique=True)
+
+    # code values
+    (GENERAL, EARLY, NATIVE, LATER, APPRENTICE, AFTER_APPRENTICE) = (0,1,2,3,4,5)
+
+    @property
+    def code(self):
+        if self.text=="Early Childhood":
+            return XPSource.EARLY
+        elif self.text=="Native Language":
+            return XPSource.NATIVE
+        elif self.text=="Later Life":
+            return XPSource.LATER
+        elif self.text=="Apprenticeship":
+            return XPSource.APPRENTICE
+        elif self.text=="After Apprenticeship":
+            return XPSource.AFTER_APPRENTICE
+        else:
+            return XPSource.GENERAL
 
     def __str__(self):
         return self.text

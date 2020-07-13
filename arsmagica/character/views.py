@@ -1,7 +1,6 @@
 from django.views import generic, View
 from django.db import transaction
-from .models import Character, CharacterType, House, CharacterVirtue, Virtue, VirtueType, Ability, AbilityType, XPSource
-
+from .models import *
 class CharacterIndexView(generic.ListView):
     model = Character
 
@@ -10,7 +9,7 @@ class CharacterSheetView(generic.DetailView):
 
 class CharacterCreateView(generic.edit.CreateView):
     model = Character
-    fields = ['name', 'fullname', 'char_type', 'house']
+    fields = ['name', 'fullname', 'char_type', 'house', 'birth_season_val', 'gauntlet_season_val', 'start_season_val', 'current_season_val']
 
     def get_form(self, form_class=None):
         form = super(CharacterCreateView, self).get_form(form_class)
@@ -19,7 +18,7 @@ class CharacterCreateView(generic.edit.CreateView):
 
 class CharacterUpdateView(generic.edit.UpdateView):
     model = Character
-    fields = ['name', 'fullname', 'char_type', 'house']
+    fields = ['name', 'fullname', 'char_type', 'house', 'birth_season_val', 'gauntlet_season_val', 'start_season_val', 'current_season_val']
 
     def get_form(self, form_class=None):
         form = super(CharacterUpdateView, self).get_form(form_class)
@@ -45,9 +44,6 @@ class CharacterVirtuesView(generic.TemplateView):
             new_cv.save()
         return super(CharacterVirtuesView, self).get(request, **kwargs)
 
-    def get(self, request, **kwargs):
-        return super(CharacterVirtuesView, self).get(request, **kwargs)
-
     def get_context_data(self, *args, **kwargs):
         pk = kwargs['pk']
         return {
@@ -61,9 +57,21 @@ class CharacterAbilitiesView(generic.TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         pk = kwargs['pk']
+        character = Character.objects.get(pk=pk)
         return {
-                'character': Character.objects.get(pk=pk),
+                'character': character,
                 'abilities': Ability.objects.all().order_by('text'),
-                'abilitytypes': AbilityType.objects.all(),
-                'xpsource': XPSource.objects.all()
+                'abilitytypes': AbilityType.objects.all()
                 }
+
+    def post(self, request, **kwargs):
+        if request.POST['Submit'] == "Update":
+            for key, value in request.POST.items():
+                x = key.split("_")
+                if x[0] == "xp":
+                    if x[1] == "new":
+                        if int(value) != 0:
+                            new_xp = CharacterAbilityXP(ability=CharacterAbility.objects.get(pk=int(x[2])),
+                                                        source=XPSource.objects.get(pk=int(x[3])), xp=int(value))
+                            new_xp.save()
+        return super(CharacterAbilitiesView, self).get(request, **kwargs)
