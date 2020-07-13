@@ -74,4 +74,12 @@ class CharacterAbilitiesView(generic.TemplateView):
                             new_xp = CharacterAbilityXP(ability=CharacterAbility.objects.get(pk=int(x[2])),
                                                         source=XPSource.objects.get(pk=int(x[3])), xp=int(value))
                             new_xp.save()
+        elif request.POST['Submit'] == "Add":
+            new_char_ability = CharacterAbility(character=Character.objects.get(pk=kwargs['pk']), ability=Ability.objects.get(pk=request.POST["ability"]), speciality=request.POST["speciality"])
+            new_char_ability.save()
+        elif request.POST['Submit'] == "Add New":
+            new_ability = Ability(text=request.POST["ability"], abilityType=AbilityType.objects.get(pk=request.POST["abilitytype"]))
+            new_ability.save()
+            new_char_ability = CharacterAbility(character=Character.objects.get(pk=kwargs['pk']), ability=new_ability, speciality=request.POST["speciality"])
+            new_char_ability.save()
         return super(CharacterAbilitiesView, self).get(request, **kwargs)

@@ -172,7 +172,6 @@ class Character(models.Model):
     @property
     def xp_source_available(self):
         xp_source_list = []
-        print("====================")
         for x in XPSource.objects.all():
             spent = sum(xp.xp for xp in CharacterAbilityXP.objects.filter(ability__character=self.pk, source=x))
             if x.code == XPSource.EARLY:
