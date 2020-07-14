@@ -173,7 +173,8 @@ class Character(models.Model):
     def xp_source_available(self):
         xp_source_list = []
         for x in XPSource.objects.all():
-            spent = sum(xp.xp for xp in CharacterAbilityXP.objects.filter(ability__character=self.pk, source=x))
+            spent = sum(xp.xp for xp in CharacterAbilityXP.objects.filter(ability__character=self.pk, source=x)) + \
+                    sum(xp.xp for xp in CharacterArtXP.objects.filter(art__character=self.pk, source=x))
             if x.code == XPSource.EARLY:
                 xp_available = 45
             elif x.code == XPSource.NATIVE:
@@ -327,6 +328,19 @@ class CharacterArt(models.Model):
 
     def score(self):
         return ScoreFromXP(self.xp())
+
+    def xp_by_source_all(self):
+        try:
+            all_xp = []
+            for x in XPSource.objects.all():
+                try:
+                    this_xp = CharacterArtXP.objects.get(art=self.pk, source=x.pk)
+                    all_xp.append([this_xp.pk, x.pk, this_xp.xp])
+                except CharacterArtXP.DoesNotExist:
+                    all_xp.append([-1, x.pk, 0])
+            return all_xp
+        except Exception as ee:
+            print(ee)
 
     class Meta:
         unique_together = (("character", "art"), )

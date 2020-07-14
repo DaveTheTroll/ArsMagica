@@ -51,7 +51,6 @@ class CharacterVirtuesView(generic.TemplateView):
                 'virtues': Virtue.objects.all().order_by('text'),
                 'virtuetypes': VirtueType.objects.all()
                 }
-
 class CharacterAbilitiesView(generic.TemplateView):
     template_name = "character\character_abilities.html"
 
