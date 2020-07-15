@@ -1,13 +1,31 @@
 from django.views import generic, View
 from django.db import transaction
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from .models import *
-class CharacterIndexView(generic.ListView):
+
+def CheckCharacterAccess(request, pk, level_required = CharacterAccess.READ):
+    if request.user.groups.filter(name="ars_magica_admin").exists():
+        return  # User is admin, allow all.
+
+    try:
+        access = CharacterAccess.objects.get(character__pk=pk, user=request.user)
+        if access.level < level_required:
+            raise PermissionDenied()
+    except ObjectDoesNotExist:
+        raise PermissionDenied()
+
+class CharacterIndexView(LoginRequiredMixin, generic.ListView):
     model = Character
 
-class CharacterSheetView(generic.DetailView):
+class CharacterSheetView(LoginRequiredMixin, generic.DetailView):
     model = Character
 
-class CharacterCreateView(generic.edit.CreateView):
+    def get(self, request, *args, **kwargs):
+        CheckCharacterAccess(request, kwargs['pk'])
+        return super(CharacterSheetView, self).get(request, *args, **kwargs)
+
+class CharacterCreateView(LoginRequiredMixin, generic.edit.CreateView):
     model = Character
     fields = ['name', 'fullname', 'char_type', 'house', 'birth_season_val', 'gauntlet_season_val', 'start_season_val', 'current_season_val']
 
@@ -16,19 +34,28 @@ class CharacterCreateView(generic.edit.CreateView):
         form.fields['house'].required = False
         return form
 
-class CharacterUpdateView(generic.edit.UpdateView):
+class CharacterUpdateView(LoginRequiredMixin, generic.edit.UpdateView):
     model = Character
     fields = ['name', 'fullname', 'char_type', 'house', 'birth_season_val', 'gauntlet_season_val', 'start_season_val', 'current_season_val']
+
+    def get(self, request, *args, **kwargs):
+        CheckCharacterAccess(request, kwargs['pk'], CharacterAccess.EDIT)
+        return super(CharacterUpdateView, self).get(request, *args, **kwargs)
 
     def get_form(self, form_class=None):
         form = super(CharacterUpdateView, self).get_form(form_class)
         form.fields['house'].required = False
         return form
 
-class CharacterVirtuesView(generic.TemplateView):
+class CharacterVirtuesView(LoginRequiredMixin, generic.TemplateView):
     template_name = "character\character_virtues.html"
 
+    def get(self, request, *args, **kwargs):
+        CheckCharacterAccess(request, kwargs['pk'], CharacterAccess.EDIT)
+        return super(CharacterVirtuesView, self).get(request, *args, **kwargs)
+
     def post(self, request, **kwargs):
+        CheckCharacterAccess(request, kwargs['pk'], CharacterAccess.EDIT)
         if request.POST['Submit'] == "Remove":
             CharacterVirtue.objects.get(pk=request.POST['pk']).delete()
         elif request.POST['Submit'] == "Add":
@@ -51,8 +78,12 @@ class CharacterVirtuesView(generic.TemplateView):
                 'virtues': Virtue.objects.all().order_by('text'),
                 'virtuetypes': VirtueType.objects.all()
                 }
-class CharacterAbilitiesView(generic.TemplateView):
+class CharacterAbilitiesView(LoginRequiredMixin, generic.TemplateView):
     template_name = "character\character_abilities.html"
+
+    def get(self, request, *args, **kwargs):
+        CheckCharacterAccess(request, kwargs['pk'], CharacterAccess.EDIT)
+        return super(CharacterAbilitiesView, self).get(request, *args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         pk = kwargs['pk']
@@ -64,6 +95,7 @@ class CharacterAbilitiesView(generic.TemplateView):
                 }
 
     def post(self, request, **kwargs):
+        CheckCharacterAccess(request, kwargs['pk'], CharacterAccess.EDIT)
         if request.POST['Submit'] == "Update":
             for key, value in request.POST.items():
                 x = key.split("_")

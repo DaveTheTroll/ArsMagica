@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 import math
 
 class CharacterType(models.Model):
@@ -192,7 +193,14 @@ class Character(models.Model):
         return xp_source_list
 
     def get_absolute_url(self):
-        return reverse('sheet', kwargs={'pk': self.pk})   
+        return reverse('sheet', kwargs={'pk': self.pk})  
+
+class CharacterAccess(models.Model):
+    character = models.ForeignKey(Character, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    level = models.IntegerField()
+
+    (READ, EDIT) = (1,2)
 
 class CharacterVirtue(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE)
